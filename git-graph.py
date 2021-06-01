@@ -731,7 +731,9 @@ class GitGraph:
 
         for commit in self.commits:
             if 'refs/stash' in commit.ref and not commit.stash:
-                ignores = [commit.id, commit.parent2(), commit.parent3()]
+                ignores = [commit.id, commit.parent2()]
+                if commit.parent3():
+                    ignores.append(commit.parent3())
                 logging.debug('Ignore commit %s' % (' '.join(ignores)))
                 commit_ignore += ignores
 

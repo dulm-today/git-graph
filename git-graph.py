@@ -13,6 +13,7 @@ import time
 import functools
 import html
 import tempfile
+import platform
 from typing import List, Dict, Any
 
 MAX_NODE_WIDTH = 60
@@ -452,7 +453,7 @@ class Git:
             return name
 
     def branch_contains(self, hash):
-        cmd = '''git branch --contains %s | sed 's/*//g' ''' % (hash)
+        cmd = '''git branch -a --contains %s | sed 's/*//g' ''' % (hash)
         return self.__exec(cmd, False)[1].strip().split('\n')
 
     def name_rev(self, hash: str, argv: List[str] = []):
@@ -667,6 +668,10 @@ class GitGraph:
 
     def _process_cherry_pick(self, commit: GitCommit):
         if commit.message not in self.commits_subject:
+            return
+
+        # Merge commit
+        if len(commit.parents) > 1:
             return
         commit_same = self.commits_subject[commit.message]
         if len(commit_same) <= 1:
@@ -886,7 +891,7 @@ class GitGraphPrinter:
         fp.write('  rankdir=BT;\n')
         fp.write('  splines="line";\n')
         fp.write(
-            '  graph [compound=false,sep=1,nodesep="0.01",ranksep="0.01"];\n')
+            '  graph [compound=false,sep=1,nodesep="0.3",ranksep="0.3"];\n')
         fp.write('  node [shape=box];\n')
         fp.write('\n')
 
@@ -1071,8 +1076,14 @@ class GitGraphPrinter:
         self._output_graph(type, filename, output)
 
         if not path:
-            # sensible-browser
-            os.system('xdg-open %s &' % (output))
+            if platform.system() == "Windows":
+                os.system('start %s &' % (output))
+            elif platform.system() == "Linux":
+                os.system('xdg-open %s &' % (output))
+            elif platform.system() == "Darwin":
+                os.system('open %s &' % (output))
+            else:
+                pass
 
     def _output_graph(self, type: str, dotfile: str, output: str):
         cmd = 'dot -T %s -o "%s" %s %s' % (type,

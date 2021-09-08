@@ -413,6 +413,11 @@ class Git:
 
     def diff(self, hash):
         cmd = 'git diff %s^ %s | grep "^[-+]"' % (hash, hash)
+        (result, out) = self.__exec(cmd, False, False)
+        if result == 0:
+            return out
+        # Maybe binary file diff
+        cmd = 'git diff %s^ %s' % (hash, hash)
         return self.__exec(cmd, True, False)
 
     def diff_hash(self, hash):

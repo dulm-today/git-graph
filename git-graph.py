@@ -246,6 +246,8 @@ def elapse_func(info="cost"):
         return _wrapper
     return _elapse_func
 
+def safe_arg(a):
+    return '"%s"' % a
 
 class GitCommit:
     id: str = None
@@ -387,7 +389,7 @@ class Git:
         time = 'a' if author_time else 'c'
         name = 'a' if author_name else 'c'
 
-        limit = ' '.join(argv)
+        limit = ' '.join(map(safe_arg, argv))
         if not limit:
             limit = "-n 100"
 
@@ -396,14 +398,14 @@ class Git:
         return self.__exec(cmd).split('\n')
 
     def _log(self, argv: List[str]):
-        cmd = 'git log %s' % (' '.join(argv))
+        cmd = 'git log %s' % (' '.join(map(safe_arg, argv)))
         return self.__exec(cmd).split('\n')
 
     def stash(self, author_time: bool, author_name: bool, argv: List[str] = []):
         time = 'a' if author_time else 'c'
         name = 'a' if author_name else 'c'
 
-        limit = ' '.join(argv)
+        limit = ' '.join(map(safe_arg, argv))
         if not limit:
             limit = "-n 100"
 
@@ -466,7 +468,7 @@ class Git:
 
     def name_rev(self, hash: str, argv: List[str] = []):
         cmd = '''git name-rev %s --name-only --no-undefined %s''' % (
-            ' '.join(argv), hash)
+            ' '.join(map(safe_arg, argv)), hash)
         return self.__exec(cmd)
 
 
